@@ -2,7 +2,22 @@ import win32gui
 import pyautogui
 import cv2
 import time
+import os
+# Directory
+directory = "pyautogui_screenshot"
 
+# Parent Directory path
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Path
+path = os.path.join(parent_dir, directory)
+
+# Create the directory
+try:
+    os.makedirs(path, exist_ok = True)
+    print("Directory '%s' created successfully" % directory)
+except OSError as error:
+    print("Directory '%s' can not be created" % directory)
 
 class wizAPI:
     def __init__(self, handle=None):
