@@ -1,3 +1,4 @@
+from xml.etree.ElementTree import tostring
 import win32gui
 import pyautogui
 import cv2
@@ -22,10 +23,11 @@ except OSError as error:
 class wizAPI:
     def __init__(self, handle=None):
         self._handle = handle
+        self.exclude_window_boarder = True
         self._spell_memory = {}
-        self._friends_area = (625, 65, 20, 240)
-        self._spell_area = (248, 293, 378, 75)
-        self._enemy_area = (50, 30, 670, 30)
+        self._friends_area = (617, 34, 20, 240)
+        self._spell_area = (240, 262, 378, 75)
+        self._enemy_area = (42, 0, 670, 30)
         """"Enemies"""
         self._dagger_enemy_area = ()
         self._key_enemy_area = ()
@@ -37,10 +39,10 @@ class wizAPI:
         self._eye_ally_area = ()
         self._sun_ally_area = ()
 
-        self._ally_area = (120, 558, 640, 72)
+        self._ally_area = (112, 527, 640, 72)
 
-        self._teamup_area = (228, 235, 200, 120)
-        self._teamup_worlds_area = (230, 184, 320, 48)
+        self._teamup_area = (220, 204, 200, 120)
+        self._teamup_worlds_area = (222, 153, 320, 48)
 
     def wait(self, s):
         """ Alias for time.sleep() that return self for function chaining """
@@ -76,8 +78,18 @@ class wizAPI:
 
     def get_window_rect(self):
         """Get the bounding rectangle of the window """
-        rect = win32gui.GetWindowRect(self._handle)
-        return [rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]]
+        #rect = win32gui.GetWindowRect(self._handle)
+        if not self.exclude_window_boarder:
+            left, top, right, bottom = win32gui.GetWindowRect(self._handle)
+        else:
+            _left, _top, _right, _bottom = win32gui.GetClientRect(self._handle)
+            left, top = win32gui.ClientToScreen(self._handle, (_left, _top))
+            right, bottom = win32gui.ClientToScreen(self._handle, (_right, _bottom))
+        #leftF, topF, rightF, bottomF = win32gui.GetWindowRect(self._handle)
+        #print(leftF, topF, rightF - leftF, bottomF - topF)
+        #print(left, top, right - left, bottom - top)
+        return [left, top, right - left, bottom - top]
+        #return [rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]]
 
     def match_image(self, largeImg, smallImg, threshold=0.1, debug=False):
         """ Finds smallImg in largeImg using template matching """
@@ -177,7 +189,7 @@ class wizAPI:
         """
         self.set_active()
         # Check if friends already opened (and close it)
-        while self.pixel_matches_color((780, 364), (230, 0, 0), 40):
+        while self.pixel_matches_color((772, 333), (230, 0, 0), 40):
             self.click(780, 364).wait(0.2)
 
         # Open friend menu
@@ -203,25 +215,25 @@ class wizAPI:
     def enter_dungeon_dialog(self):
         """ Detects if the 'Enter Dungeon' dialog is present """
         self.set_active()
-        return (self.pixel_matches_color((404, 553), (0,0,0), 12) and
-                self.pixel_matches_color((399, 553), (225,225,225), 15))
+        return (self.pixel_matches_color((396, 522), (0,0,0), 12) and
+                self.pixel_matches_color((391, 522), (225,225,225), 15))
 
     def join_a_team_error(self):
         """ Detects if the 'Enter Dungeon' dialog is present """
         self.set_active()
-        return (self.pixel_matches_color((514, 390), (255,255,0), 10) and
-                self.pixel_matches_color((510, 390), (134,37,66), 15))
+        return (self.pixel_matches_color((506, 359), (255,255,0), 10) and
+                self.pixel_matches_color((502, 359), (134,37,66), 15))
 
     def team_canceled_error(self):
         """ Detects if the 'Enter Dungeon' dialog is present """
         self.set_active()
-        return (self.pixel_matches_color((514, 410), (255,255,0), 10) and
-                self.pixel_matches_color((510, 410), (132,36,66), 15))
+        return (self.pixel_matches_color((506, 379), (255,255,0), 10) and
+                self.pixel_matches_color((502, 379), (132,36,66), 15))
 
     def is_DS_loading(self):
         """ Matches an orange pixel in the Dragonspyre loading screen """
         self.set_active()
-        return self.pixel_matches_color((110, 551), (252, 127, 5), 20)
+        return self.pixel_matches_color((102, 520), (252, 127, 5), 20)
 
     def hold_key(self, key, holdtime):
         """ 
@@ -244,7 +256,7 @@ class wizAPI:
     def is_health_low(self):
         self.set_active()
         # Matches a pixel in the lower third of the health globe
-        POSITION = (23, 563)
+        POSITION = (15, 532)
         COLOR = (140, 28, 5)
         THRESHOLD = 10
         return self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
@@ -252,7 +264,7 @@ class wizAPI:
     def is_health_medium(self):
         self.set_active()
         # Matches a pixel above the health number in the health globe
-        POSITION = (25, 545)
+        POSITION = (17, 514)
         COLOR = (215, 27, 45)
         THRESHOLD = 10
         return self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
@@ -260,7 +272,7 @@ class wizAPI:
     def is_health_high(self):
         self.set_active()
         # Matches a pixel above the health number in the health globe
-        POSITION = (55, 525)
+        POSITION = (47, 494)
         COLOR = (244, 84, 115)
         THRESHOLD = 10
         return self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
@@ -268,41 +280,45 @@ class wizAPI:
     def is_mana_low(self):
         self.set_active()
         # Matches a pixel in the lower third of the mana globe
-        POSITION = (115, 591)
+        POSITION = (107, 560)
         COLOR = (66, 20, 102)
         THRESHOLD = 10
         return self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
 
-    def use_potion_if_needed(self):
-        mana_low = not self.is_mana_low()
-        #health_low = self.is_health_low()
+    def use_potion_if_needed(self, checkmana = True, checkhealth = True):
+        mana_low = False
+        health_low = False
+        if checkmana:
+            mana_low = not self.is_mana_low()
+        if checkhealth:
+            health_low = self.is_health_low()
 
         if mana_low:
             print('Mana is low, using potion')
-        #if health_low:
-            #print('Health is low, using potion')
-        if mana_low: #or health_low:
-            self.click(160, 590, delay=.2)
+        if health_low:
+            print('Health is low, using potion')
+        if mana_low or health_low:
+            self.click(152, 559, delay=.2)
 
-    """Pass dead button space = (327, 331, 79, 23)"""
+    """Pass dead button space = (319, 300, 79, 23)"""
     def pass_dead(self):
-        self.click(367, 343, delay=.5).move_mouse(200, 400)
+        self.click(359, 312, delay=.5).move_mouse(-20, 300)
         print('pass turn')
         return self
 
     def is_dead(self):
         """ Matches a yellow pixel in the pass dead button """
-        return self.pixel_matches_color((354, 342), (255, 255, 0), 20) or self.pixel_matches_color((359, 346), (129, 71, 0), 15)
+        return self.pixel_matches_color((346, 311), (255, 255, 0), 20) or self.pixel_matches_color((351, 315), (129, 71, 0), 15)
 
-    """Pass button space = (219, 391, 79, 23)"""
+    """Pass button space = (211, 360, 79, 23)"""
     def pass_turn(self):
-        self.click(258, 402, delay=.5).move_mouse(200, 400)
+        self.click(250, 371, delay=.5).move_mouse(-20, 300)
         print('pass turn')
         return self
 
     def is_turn_to_play(self):
         """ matches a yellow pixel in the 'pass' button """
-        return self.pixel_matches_color((242, 404), (255, 255, 0), 20) or self.pixel_matches_color((247, 408), (129, 71, 0), 15)
+        return self.pixel_matches_color((234, 373), (255, 255, 0), 20) or self.pixel_matches_color((239, 377), (129, 71, 0), 15)
 
     def wait_for_next_turn(self):
         """ Wait for spell round to begin """
@@ -340,7 +356,7 @@ class wizAPI:
 
     def is_idle(self):
         """ Matches a pink pixel in the pet icon (only visible when not in battle) """
-        return self.pixel_matches_color((140, 554), (253, 146, 206), 7)
+        return self.pixel_matches_color((132, 523), (253, 146, 206), 7)
 
     def find_spell(self, spell_name, threshold=0.15, max_tries=2, recapture=True):
         """ 
@@ -380,7 +396,7 @@ class wizAPI:
     def print_color_image(self, image_region, threshold=0.1, max_tries=2, recapture=True):
         self.screenshot('color_image.png', region = image_region)
 
-    def tu_lore(self, icon_name, threshold=0.1, max_tries=2, recapture=True):
+    def tu_lore(self, icon_name, p_try_count = 1, threshold=0.1, max_tries=2, recapture=True):
         """ 
         Attempts the find the icon passed is 'icon_name'
         returns False if not found with the given threshold
@@ -410,7 +426,7 @@ class wizAPI:
             self.click(offset_x + x, offset_y + y)  # Select icon
             return self
         else:
-            print('Loremaster cound not be found in Team Up')
+            print('Loremaster cound not be found in Team Up ' + str(p_try_count), end="\r")
             return False
 
     def teamup_has_world(self, icon_name, threshold=0.1, max_tries=2, recapture=True):
@@ -607,14 +623,14 @@ class wizAPI:
     def at_target(self, target_pos):
         """ Clicks the target, based on position 1, 2, 3, or 4 """
         x = (174 * (target_pos - 1)) + 130
-        y = 50
+        y = 29
         self.click(x, y, delay=.2)
         return self
 
     def at_ally(self, target_pos):
         """ Clicks the target, based on position 1, 2, 3, or 4 """
         x = (174 * (target_pos - 1)) + 130
-        y = 605
+        y = 597
         self.click(x, y, delay=.2)
         return self
 
@@ -645,7 +661,7 @@ class wizAPI:
         self.set_active()
         pyautogui.keyDown('a')
         count = 0
-        while not self.pixel_matches_color((385, 531), (131, 118, 14), 4):
+        while not self.pixel_matches_color((377, 500), (131, 118, 14), 4):
             count += 1
             pass
         pyautogui.keyUp('a')

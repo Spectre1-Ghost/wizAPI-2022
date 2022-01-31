@@ -49,12 +49,14 @@ def team_up():
         print('missing kiosk X?')
     """Find Dragonspire world in team up kiosk check"""
     while (not player.teamup_has_world('dragonspire')):
-        player.click(570, 208)
+        player.click(562, 177)
     print('Found Dragonspire')
     """ Click on dragonspire, lorechamber"""
-    player.click(520, 205)
-    while not player.tu_lore('lorechamber'):
-        player.click(520, 205)
+    player.click(512, 174)
+    PTRYCOUNT = 1
+    while not player.tu_lore('lorechamber', p_try_count=PTRYCOUNT):
+        player.click(512, 174)
+        PTRYCOUNT += 1
         time.sleep(1)
 
 ROUND_COUNT = 0
@@ -70,17 +72,15 @@ while True:
 
     #player.move_mouse(238, 398, speed=.5)
     #player.print_color_image((354, 342, 79, 23))
-    # while True:
-    #     time.sleep(1)
-    #     if player.is_dead():
-    #         player.pass_dead()
-
-    #player.print_color_image((248, 293, 378, 75))
+    
+    #wx, wy = player.get_window_rect()[1::-1] #GetClientRect
+    #player.print_color_image((211, 360, 79, 23))
     #print(player.is_health_low(),player.is_health_medium(),player.is_health_high())
+    #player.find_spell('feint')
     #exit()
 
     """ Check Mana and use potion if necessary """
-    player.use_potion_if_needed()
+    player.use_potion_if_needed(checkhealth = False)
     """ Check Health and Wait if necessary """
     HEALING_TIMER = time.time()
     if not player.is_health_medium():
@@ -148,6 +148,29 @@ while True:
 
         # Play
         """if shadowbar?"""
+        """ Life """
+        # try:
+        #     if (not player.is_health_low() and player.find_spell('satyr', threshold=0.06, max_tries=2)):
+        #         player.cast_spell('satyr').at_ally('life')
+        #     elif player.find_spell('gear-bladestorm', threshold=0.06, max_tries=2):
+        #         player.cast_spell('gear-bladestorm')
+        #     elif player.get_enemy_pos('balance') and player.find_spell('feint', threshold=0.06, max_tries=2):
+        #         player.cast_spell('feint').at_target(boss_pos)
+        #     elif player.get_ally_pos('storm') and player.find_spell('gear-windstorm', threshold=0.06, max_tries=2):
+        #         player.cast_spell('gear-windstorm')
+        #     elif player.find_spell('life-gear-blade', threshold=0.06, max_tries=2):
+        #         player.cast_spell('life-gear-blade').at_ally(player.get_ally_pos('life'))
+        #     elif (player.get_ally_pos('life') or player.get_ally_pos('death') or player.get_ally_pos('myth')) and player.find_spell('spirit-blade', threshold=0.06, max_tries=2):
+        #         target_ally_pos = player.get_ally_pos('life') or player.get_ally_pos('death') or player.get_ally_pos('myth')
+        #         player.cast_spell('spirit-blade').at_ally(target_ally_pos)
+        #     elif player.find_spell('leafstorm', threshold=0.06, max_tries=2):
+        #         player.cast_spell('leafstorm')
+        #     else:
+        #         player.pass_turn()
+        # except:
+        #     print('Error occured while casting spell')
+        #     player.pass_turn()
+
         """ STORM """
         try:
             if (player.find_spell('glowbug-squall', threshold=0.04, max_tries=2) and player.enchant('glowbug-squall', 'epic')):
