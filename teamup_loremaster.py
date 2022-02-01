@@ -48,13 +48,13 @@ def team_up():
     else:
         print('missing kiosk X?')
     """Find Dragonspire world in team up kiosk check"""
-    while (not player.teamup_has_world('dragonspire')):
+    while (not player.teamup_find_world('dragonspire')):
         player.click(562, 177)
     print('Found Dragonspire')
-    """ Click on dragonspire, lorechamber"""
+    """ Click on dragonspire, loremaster"""
     player.click(512, 174)
     PTRYCOUNT = 1
-    while not player.tu_lore('lorechamber', p_try_count=PTRYCOUNT):
+    while not player.teamup_find_dungeon('loremaster', p_try_count=PTRYCOUNT):
         player.click(512, 174)
         PTRYCOUNT += 1
         time.sleep(1)
@@ -74,7 +74,7 @@ while True:
     #player.print_color_image((354, 342, 79, 23))
     
     #wx, wy = player.get_window_rect()[1::-1] #GetClientRect
-    #player.print_color_image((211, 360, 79, 23))
+    #player.print_color_image((player._spell_area))
     #print(player.is_health_low(),player.is_health_medium(),player.is_health_high())
     #player.find_spell('feint')
     #exit()
@@ -149,44 +149,46 @@ while True:
         # Play
         """if shadowbar?"""
         """ Life """
-        # try:
-        #     if (not player.is_health_low() and player.find_spell('satyr', threshold=0.06, max_tries=2)):
-        #         player.cast_spell('satyr').at_ally('life')
-        #     elif player.find_spell('gear-bladestorm', threshold=0.06, max_tries=2):
-        #         player.cast_spell('gear-bladestorm')
-        #     elif player.get_enemy_pos('balance') and player.find_spell('feint', threshold=0.06, max_tries=2):
-        #         player.cast_spell('feint').at_target(boss_pos)
-        #     elif player.get_ally_pos('storm') and player.find_spell('gear-windstorm', threshold=0.06, max_tries=2):
-        #         player.cast_spell('gear-windstorm')
-        #     elif player.find_spell('life-gear-blade', threshold=0.06, max_tries=2):
-        #         player.cast_spell('life-gear-blade').at_ally(player.get_ally_pos('life'))
-        #     elif (player.get_ally_pos('life') or player.get_ally_pos('death') or player.get_ally_pos('myth')) and player.find_spell('spirit-blade', threshold=0.06, max_tries=2):
-        #         target_ally_pos = player.get_ally_pos('life') or player.get_ally_pos('death') or player.get_ally_pos('myth')
-        #         player.cast_spell('spirit-blade').at_ally(target_ally_pos)
-        #     elif player.find_spell('leafstorm', threshold=0.06, max_tries=2):
-        #         player.cast_spell('leafstorm')
-        #     else:
-        #         player.pass_turn()
-        # except:
-        #     print('Error occured while casting spell')
-        #     player.pass_turn()
-
-        """ STORM """
         try:
-            if (player.find_spell('glowbug-squall', threshold=0.04, max_tries=2) and player.enchant('glowbug-squall', 'epic')):
-                player.find_spell('enchanted-glowbug-squall', max_tries=4)
-                player.cast_spell('enchanted-glowbug-squall')
-            elif (battle_round == 2) and player.get_enemy_pos('balance') and (player.find_spell('lightning-bats', threshold=0.08, max_tries=3) and player.enchant('lightning-bats', 'epic')):
-                player.find_spell('enchanted-lightning-bats', max_tries=4)
-                player.cast_spell('enchanted-lightning-bats').at_target(boss_pos)
-            elif (player.find_spell('tempest', threshold=0.08, max_tries=3) and player.enchant('tempest', 'epic')):
-                player.find_spell('enchanted-tempest', max_tries=4)
-                player.cast_spell('enchanted-tempest')
+            SPIRITBLADEPLAYER = (player.get_ally_pos('myth') or player.get_ally_pos('death') or player.get_ally_pos('life'))
+            ELEMENTALBLADEPLAYER = (player.get_ally_pos('storm') or player.get_ally_pos('fire') or player.get_ally_pos('ice'))
+
+            if (not player.is_health_low() and player.find_spell('satyr', threshold=0.08, max_tries=2)):
+                player.cast_spell('satyr').at_ally('life')
+            elif player.find_spell('mass-feint', threshold=0.08, max_tries=3):
+                player.cast_spell('mass-feint')
+            elif player.get_ally_pos('storm') and player.find_spell('gear-windstorm', threshold=0.06, max_tries=2):
+                player.cast_spell('gear-windstorm')
+            elif SPIRITBLADEPLAYER and (player.find_spell('spirit-blade', threshold=0.08, max_tries=3) and player.enchant('spirit-blade', 'pet-sharpen', threshold=0.08)):
+                player.find_spell('sharpened-spirit-blade', max_tries=4)
+                player.cast_spell('sharpened-spirit-blade').at_ally(SPIRITBLADEPLAYER)
+            elif ELEMENTALBLADEPLAYER and (player.find_spell('elemental-blade', threshold=0.08, max_tries=3) and player.enchant('elemental-blade', 'pet-sharpen', threshold=0.08)):
+                player.find_spell('sharpened-elemental-blade', max_tries=4)
+                player.cast_spell('elemental-blade').at_ally(ELEMENTALBLADEPLAYER)
+            elif player.get_enemy_pos('balance') and player.find_spell('feint', threshold=0.06, max_tries=2):
+                player.cast_spell('feint').at_target(boss_pos)
             else:
                 player.pass_turn()
         except:
             print('Error occured while casting spell')
             player.pass_turn()
+
+        """ STORM """
+        # try:
+        #     if (player.find_spell('glowbug-squall', threshold=0.04, max_tries=2) and player.enchant('glowbug-squall', 'epic')):
+        #         player.find_spell('enchanted-glowbug-squall', max_tries=4)
+        #         player.cast_spell('enchanted-glowbug-squall')
+        #     elif (battle_round == 2) and player.get_enemy_pos('balance') and (player.find_spell('lightning-bats', threshold=0.08, max_tries=3) and player.enchant('lightning-bats', 'epic')):
+        #         player.find_spell('enchanted-lightning-bats', max_tries=4)
+        #         player.cast_spell('enchanted-lightning-bats').at_target(boss_pos)
+        #     elif (player.find_spell('tempest', threshold=0.08, max_tries=3) and player.enchant('tempest', 'epic')):
+        #         player.find_spell('enchanted-tempest', max_tries=4)
+        #         player.cast_spell('enchanted-tempest')
+        #     else:
+        #         player.pass_turn()
+        # except:
+        #     print('Error occured while casting spell')
+        #     player.pass_turn()
 
         """ DEATH """
         # try:

@@ -41,7 +41,7 @@ class wizAPI:
 
         self._ally_area = (112, 527, 640, 72)
 
-        self._teamup_area = (220, 204, 200, 120)
+        self._teamup_dungeon_area = (220, 204, 200, 120)
         self._teamup_worlds_area = (222, 153, 320, 48)
 
     def wait(self, s):
@@ -78,18 +78,13 @@ class wizAPI:
 
     def get_window_rect(self):
         """Get the bounding rectangle of the window """
-        #rect = win32gui.GetWindowRect(self._handle)
         if not self.exclude_window_boarder:
             left, top, right, bottom = win32gui.GetWindowRect(self._handle)
         else:
             _left, _top, _right, _bottom = win32gui.GetClientRect(self._handle)
             left, top = win32gui.ClientToScreen(self._handle, (_left, _top))
             right, bottom = win32gui.ClientToScreen(self._handle, (_right, _bottom))
-        #leftF, topF, rightF, bottomF = win32gui.GetWindowRect(self._handle)
-        #print(leftF, topF, rightF - leftF, bottomF - topF)
-        #print(left, top, right - left, bottom - top)
         return [left, top, right - left, bottom - top]
-        #return [rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]]
 
     def match_image(self, largeImg, smallImg, threshold=0.1, debug=False):
         """ Finds smallImg in largeImg using template matching """
@@ -147,10 +142,10 @@ class wizAPI:
 
     def click(self, x, y, delay=.1, speed=.5, button='left'):
         """ Moves the mouse to (x, y) relative to the window and presses the mouse button """
-        (self.set_active()
-         .move_mouse(x, y, speed=speed)
-         .wait(delay)
-         .set_active())
+        self.set_active()
+        if x and y:
+            self.move_mouse(x, y, speed=speed)
+        self.wait(delay).set_active()
 
         pyautogui.click(button=button)
         return self
@@ -396,7 +391,7 @@ class wizAPI:
     def print_color_image(self, image_region, threshold=0.1, max_tries=2, recapture=True):
         self.screenshot('color_image.png', region = image_region)
 
-    def tu_lore(self, icon_name, p_try_count = 1, threshold=0.1, max_tries=2, recapture=True):
+    def teamup_find_dungeon(self, icon_name, p_try_count = 1, threshold=0.1, max_tries=2, recapture=True):
         """ 
         Attempts the find the icon passed is 'icon_name'
         returns False if not found with the given threshold
@@ -414,22 +409,23 @@ class wizAPI:
                 recapture = True
 
             if recapture:
-                self.mouse_out_of_area(self._teamup_area)
-                self.screenshot('loremaster_area.png', region = self._teamup_area)
+                self.mouse_out_of_area(self._teamup_dungeon_area)
+                self.screenshot('dungeon_area.png', region = self._teamup_dungeon_area)
 
             res = self.match_image(
-                (r'pyautogui_screenshot/loremaster_area.png'), (r'kiosk/' + icon_name + '.png'), threshold)
+                (r'pyautogui_screenshot/dungeon_area.png'), (r'kiosk/' + icon_name + '.png'), threshold)
 
-        if res is not False:
+        if res != False:
+            print(icon_name + ' found in ' + str(p_try_count) + ' tries.')
             x, y = res
-            offset_x, offset_y = self._teamup_area[:2]
+            offset_x, offset_y = self._teamup_dungeon_area[:2]
             self.click(offset_x + x, offset_y + y)  # Select icon
             return self
         else:
-            print('Loremaster cound not be found in Team Up ' + str(p_try_count), end="\r")
+            print('Finding '+ icon_name +', Tries: ' + str(p_try_count), end='\r')
             return False
 
-    def teamup_has_world(self, icon_name, threshold=0.1, max_tries=2, recapture=True):
+    def teamup_find_world(self, icon_name, threshold=0.1, max_tries=2, recapture=True):
         """ 
         Attempts the find the icon passed is 'icon_name'
         returns False if not found with the given threshold
@@ -630,7 +626,7 @@ class wizAPI:
     def at_ally(self, target_pos):
         """ Clicks the target, based on position 1, 2, 3, or 4 """
         x = (174 * (target_pos - 1)) + 130
-        y = 597
+        y = 570
         self.click(x, y, delay=.2)
         return self
 
