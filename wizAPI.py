@@ -1,4 +1,3 @@
-from xml.etree.ElementTree import tostring
 import win32gui
 import pyautogui
 import cv2
@@ -169,8 +168,8 @@ class wizAPI:
             region = list(region)
             region[0] += wx
             region[1] += wy
-
-        return pyautogui.screenshot(r'pyautogui_screenshot/' + name, region=region)
+            
+        return pyautogui.screenshot((r'pyautogui_screenshot/' + name), region=region)
         #print((os.path.dirname(os.path.abspath(__file__))+'/pyautogui_screenshot/' + name))
         #img.save((os.path.dirname(os.path.abspath(__file__))+'/pyautogui_screenshot/' + name))
         #return img

@@ -74,7 +74,7 @@ while True:
     #player.print_color_image((354, 342, 79, 23))
     
     #wx, wy = player.get_window_rect()[1::-1] #GetClientRect
-    #player.print_color_image((player._spell_area))
+    #player.print_color_image((132, 523, 50, 50))
     #print(player.is_health_low(),player.is_health_medium(),player.is_health_high())
     #player.find_spell('feint')
     #exit()
